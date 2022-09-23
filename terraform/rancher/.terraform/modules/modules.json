@@ -1,1 +1,0 @@
-{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"controlplane-nodes","Source":"./modules/controlplane-node","Dir":"modules/controlplane-node"},{"Key":"worker","Source":"./modules/worker-node","Dir":"modules/worker-node"}]}
