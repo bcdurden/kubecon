@@ -1,0 +1,13 @@
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+  - host: git.homelab.platformfeverdream.io
+    paths: 
+    - path: "/"
+      pathType: "Prefix"
+  tls:
+  - secretName: gitea-prod-certificate
+    hosts:
+    - git.homelab.platformfeverdream.io

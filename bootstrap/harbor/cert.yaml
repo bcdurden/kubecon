@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-prod
+  namespace: harbor
+spec:
+  secretName: harbor-prod-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - harbor.homelab.platformfeverdream.io

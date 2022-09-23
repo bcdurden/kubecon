@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rancher-airgap
+  namespace: cattle-system
+spec:
+  secretName: rancher-airgap-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - 'rancher.airgap.platformfeverdream.io'
