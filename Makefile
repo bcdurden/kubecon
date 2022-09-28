@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-REQUIRED_BINARIES := kubectl
+REQUIRED_BINARIES := kubectl cosign helm terraform
 WORKING_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(shell git rev-parse --show-toplevel)
 BOOTSTRAP_DIR := ${WORKING_DIR}/bootstrap
@@ -8,10 +8,19 @@ TERRAFORM_DIR := ${WORKING_DIR}/terraform
 EL8000_CONTEXT="harvester"
 LOCAL_CLUSTER_NAME=rancher-aws
 BASE_URL=homelab.platformfeverdream.io
-HARBOR_URL=harbor.$(BASE_URL)
 GITEA_URL=git.$(BASE_URL)
 HARBOR_CA_CERT=/tmp/harbor.ca.crt
 GIT_ADMIN_PASSWORD="Pa22word"
+
+# Carbide info
+CARBIDE_USER="internal-tester-read"
+CARBIDE_PASSWORD=""
+IMAGES_FILE=""
+
+# Harbor info
+HARBOR_URL=harbor.$(BASE_URL)
+HARBOR_USER=admin
+HARBOR_PASSWORD=""
 
 check-tools: ## Check to make sure you have the right tools
 	$(foreach exec,$(REQUIRED_BINARIES),\
@@ -35,12 +44,19 @@ registry-delete: check-tools
 	@printf "\n===> Deleting Registry\n";
 	@helm delete harbor -n harbor
 
-registry-cert: check-tools
-	@printf "\n===>Fetching Harbor CA Certificate\n";
-	@kubectx harvester
-	@helm status harbor -n harbor > /dev/null
-	@kubectl get secret harbor-ingress -n harbor -o yaml | yq e '.data."ca.crt"' - | base64 -d > $(HARBOR_CA_CERT)
-	@cat $(HARBOR_CA_CERT)
+# airgap targets
+pull-rke2: check-tools
+	@printf "\n===>Pulling RKE2 Images\n";
+	@${BOOTSTRAP_DIR}/airgap_images/pull_carbide_rke2 $(CARBIDE_USER) '$(CARBIDE_PASSWORD)'
+	@printf "\nIf successful, your images will be available at /tmp/rke2-images.tar.gz"
+pull-rancher: check-tools
+	@printf "\n===>Pulling Rancher Images\n";
+	@${BOOTSTRAP_DIR}/airgap_images/pull_carbide_rancher $(CARBIDE_USER) '$(CARBIDE_PASSWORD)'
+	@printf "\nIf successful, your images will be available at /tmp/rancher-images.tar.gz and /tmp/cert-manager.tar.gz"
+push-images: check-tools
+	@printf "\n===>Pushing Images to Harbor\n";
+	@${BOOTSTRAP_DIR}/airgap_images/push_carbide $(HARBOR_URL) $(HARBOR_USER) '$(HARBOR_PASSWORD)' $(IMAGES_FILE)
+
 
 # git targets
 git: check-tools
