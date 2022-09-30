@@ -1,6 +1,0 @@
-/windows/d
-/hyperkube/d
-/eks/d
-/aks/d
-/gks/d
-/directx/d

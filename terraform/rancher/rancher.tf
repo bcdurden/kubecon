@@ -13,7 +13,7 @@ resource "helm_release" "cert_manager" {
   ]
 
   name             = "cert-manager"
-  chart            = "https://charts.jetstack.io/charts/cert-manager-v${var.cert_manager_version}.tgz"
+  chart            = "../../bootstrap/rancher/cert-manager-v${var.cert_manager_version}.tgz"
   namespace        = "cert-manager"
   create_namespace = true
   wait             = true
@@ -47,7 +47,7 @@ resource "helm_release" "rancher_server" {
   ]
 
   name             = "rancher"
-  chart            = "https://releases.rancher.com/server-charts/latest/rancher-${var.rancher_version}.tgz"
+  chart            = "../../bootstrap/rancher/rancher-${var.rancher_version}.tgz"
   namespace        = "cattle-system"
   create_namespace = true
   wait             = true
