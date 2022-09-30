@@ -61,12 +61,14 @@ resource "harvester_virtualmachine" "node" {
         content: |
           token: ${var.cluster_token}
           server: https://${var.master_hostname}:9345
+          ${var.rke2_config_additions}
       - path: /etc/hosts
         owner: root
         content: |
           127.0.0.1 localhost
           127.0.0.1 "${var.node_prefix}-${count.index}"
           ${var.master_vip} ${var.master_hostname}
+      ${var.registry_endpoint}
       packages:
       - qemu-guest-agent
       runcmd:
@@ -74,7 +76,7 @@ resource "harvester_virtualmachine" "node" {
         - enable
         - '--now'
         - qemu-guest-agent.service
-      - curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" INSTALL_RKE2_CHANNEL=${var.rke2_channel} sh -
+      - curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" INSTALL_RKE2_VERSION=${var.rke2_version} sh -
       - systemctl enable rke2-agent.service
       - systemctl start rke2-agent.service
       ssh_authorized_keys: 

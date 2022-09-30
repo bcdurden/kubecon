@@ -13,7 +13,7 @@ variable "kubeconfig_filename" {
 variable "cert_manager_version" {
   type        = string
   description = "Version of cert-manager to install alongside Rancher (format: 0.0.0)"
-  default     = "1.7.1"
+  default     = "1.7.3"
 }
 
 variable "rancher_version" {
@@ -29,4 +29,16 @@ variable "rancher_server_dns" {
   type        = string
   description = "DNS host name of the Rancher server"
   default = "rancher.airgap.platformfeverdream.io"
+}
+variable "harbor_url" {
+  type = string
+  default = "harbor.homelab.platformfeverdream.io"
+}
+variable "rancher_bootstrap_password" {
+  type = string
+  default = "admin" # TODO: change this once the terraform provider has been updated with the new pw bootstrap logic
+}
+variable "rancher_replicas" {
+  type = string
+  default = 1
 }

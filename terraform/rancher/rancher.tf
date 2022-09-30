@@ -22,6 +22,22 @@ resource "helm_release" "cert_manager" {
     name  = "installCRDs"
     value = "true"
   }
+  set {
+    name  = "image.repository"
+    value = "${var.harbor_url}/jetstack/cert-manager-controller"
+  }
+  set {
+    name  = "webhook.image.repository"
+    value = "${var.harbor_url}/jetstack/cert-manager-webhook"
+  }
+  set {
+    name  = "cainjector.image.repository"
+    value = "${var.harbor_url}/jetstack/cert-manager-cainjector"
+  }
+  set {
+    name  = "startupapicheck.image.repository"
+    value = "${var.harbor_url}/jetstack/cert-manager-ctl"
+  }
 }
 
 # Install Rancher helm chart
@@ -40,14 +56,24 @@ resource "helm_release" "rancher_server" {
     name  = "hostname"
     value = var.rancher_server_dns
   }
-
   set {
     name  = "replicas"
-    value = "3"
+    value = var.rancher_replicas
   }
-
   set {
     name  = "bootstrapPassword"
-    value = "admin" # TODO: change this once the terraform provider has been updated with the new pw bootstrap logic
+    value = var.rancher_bootstrap_password
+  }
+  set {
+    name  = "certmanager.version"
+    value = var.cert_manager_version
+  }
+  set {
+    name  = "rancherImage"
+    value = "${var.harbor_url}/rancher/rancher"
+  }
+  set {
+    name  = "systemDefaultRegistry"
+    value = "${var.harbor_url}"
   }
 }

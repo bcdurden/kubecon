@@ -48,9 +48,9 @@ variable "network_data" {
     type = string
     default = ""
 }
-variable "rke2_channel" {
+variable "rke2_version" {
     type = string
-    default = "v1.23"
+    default = "v1.24.3+rke2r1"
 }
 variable "cluster_token" {
     type = string
@@ -75,4 +75,27 @@ variable "controlplane_node_core_count" {
 variable "controlplane_node_memory_size" {
     type = string
     default = "4Gi"
+}
+variable "rke2_config_additions" {
+    type = string
+    default = <<EOT
+system-default-registry: harbor.homelab.platformfeverdream.io
+    
+    EOT
+}
+variable "registry_endpoint" {
+    type = string
+    default = <<EOT
+
+      - path: /etc/rancher/rke2/registries.yaml
+        owner: root
+        content: |
+          mirrors:
+            docker.io:
+              endpoint:
+                - "https://harbor.homelab.platformfeverdream.io"
+            harbor.homelab.platformfeverdream.io:
+              endpoint:
+                - "https://harbor.homelab.platformfeverdream.io"
+    EOT
 }

@@ -24,7 +24,7 @@ resource "harvester_virtualmachine" "jumpbox" {
   disk {
     name       = "rootdisk"
     type       = "disk"
-    size       = "40Gi"
+    size       = "80Gi"
     bus        = "virtio"
     boot_order = 1
 

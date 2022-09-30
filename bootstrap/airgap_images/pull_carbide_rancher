@@ -4,6 +4,12 @@ SOURCE_REGISTRY=rgcrprod.azurecr.us
 SOURCE_REGISTRY_USER=$1
 SOURCE_REGISTRY_PASS=$2
 
+if [ $(uname) == "Darwin" ]; then
+    MD5_BINARY="md5 -r"
+else
+    MD5_BINARY="md5sum"
+fi
+
 # Working directories & TAR
 DEST_DIRECTORY=/tmp/cert-manager-images
 DEST_TAR=/tmp/cert-manager-images.tar.gz  # Change this to the location you want for your resulting TAR 
@@ -36,7 +42,7 @@ for image in $(helm template jetstack/cert-manager --version $CERT_MANAGER_RELEA
     dest_image=$(echo $image | sed "s/quay.io/TARGET_REGISTRY/g")
     
     # Create manifest to use during load
-    img_id_num=$(echo $RANDOM | md5sum | head -c 20)
+    img_id_num=$(echo $RANDOM | $MD5_BINARY | head -c 20)
     echo "$img_id_num|$dest_image" >> $DEST_DIRECTORY/manifest.txt
     
     # Save image locally
@@ -78,7 +84,7 @@ for image in $RANCHER_IMAGES; do
     dest_image="TARGET_REGISTRY/$image"
     
     # Create manifest to use during load
-    img_id_num=$(echo $RANDOM | md5sum | head -c 20)
+    img_id_num=$(echo $RANDOM | $MD5_BINARY | head -c 20)
     echo "$img_id_num|$dest_image" >> $DEST_DIRECTORY/manifest.txt
     
     # Save image locally

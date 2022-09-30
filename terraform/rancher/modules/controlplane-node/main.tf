@@ -58,6 +58,7 @@ resource "harvester_virtualmachine" "node-main" {
         owner: root
         content: |
           token: ${var.cluster_token}
+          ${var.rke2_config_additions}
           tls-san:
             - ${var.node_name_prefix}-0
             - ${var.master_hostname}
@@ -68,6 +69,7 @@ resource "harvester_virtualmachine" "node-main" {
           127.0.0.1 localhost
           127.0.0.1 ${var.node_name_prefix}-0
           127.0.0.1 ${var.master_hostname}
+      ${var.registry_endpoint}
       packages:
       - qemu-guest-agent
       runcmd:
@@ -75,7 +77,7 @@ resource "harvester_virtualmachine" "node-main" {
         - enable
         - '--now'
         - qemu-guest-agent.service
-      - curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=${var.rke2_channel} sh -
+      - curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${var.rke2_version} sh -
       - mkdir -p /var/lib/rancher/rke2/server/manifests/
       - >-
         wget https://kube-vip.io/manifests/rbac.yaml -O
@@ -148,37 +150,39 @@ resource "harvester_virtualmachine" "node-ha" {
   cloudinit {
     type      = "noCloud"
     user_data    = <<EOT
-        #cloud-config
-        package_update: true
-        write_files:
-        - path: /etc/rancher/rke2/config.yaml
-          owner: root
-          content: |
-            token: ${var.cluster_token}
-            server: https://${var.master_hostname}:9345
-            tls-san:
-              - ${var.node_name_prefix}-${count.index + 1}
-              - ${var.master_hostname}
-              - ${var.master_vip}
-        - path: /etc/hosts
-          owner: root
-          content: |
-            127.0.0.1 localhost
-            127.0.0.1 ${var.node_name_prefix}-${count.index + 1}
-            ${var.master_vip} ${var.master_hostname}
-        packages:
-        - qemu-guest-agent
-        runcmd:
-        - - systemctl
-          - enable
-          - '--now'
-          - qemu-guest-agent.service
-        - curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=${var.rke2_channel} sh -
-        - systemctl enable rke2-server.service
-        - systemctl start rke2-server.service
-        ssh_authorized_keys: 
-        - ${var.ssh_pubkey}
-      EOT
+      #cloud-config
+      package_update: true
+      write_files:
+      - path: /etc/rancher/rke2/config.yaml
+        owner: root
+        content: |
+          token: ${var.cluster_token}
+          server: https://${var.master_hostname}:9345
+          ${var.rke2_config_additions}
+          tls-san:
+            - ${var.node_name_prefix}-${count.index + 1}
+            - ${var.master_hostname}
+            - ${var.master_vip}
+      - path: /etc/hosts
+        owner: root
+        content: |
+          127.0.0.1 localhost
+          127.0.0.1 ${var.node_name_prefix}-${count.index + 1}
+          ${var.master_vip} ${var.master_hostname}
+      ${var.registry_endpoint}
+      packages:
+      - qemu-guest-agent
+      runcmd:
+      - - systemctl
+        - enable
+        - '--now'
+        - qemu-guest-agent.service
+      - curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=${var.rke2_version} sh -
+      - systemctl enable rke2-server.service
+      - systemctl start rke2-server.service
+      ssh_authorized_keys: 
+      - ${var.ssh_pubkey}
+    EOT
     network_data = var.network_data
   }
 }
