@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-REQUIRED_BINARIES := kubectl cosign helm terraform
+REQUIRED_BINARIES := kubectl cosign helm terraform kubectx kubecm
 WORKING_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(shell git rev-parse --show-toplevel)
 BOOTSTRAP_DIR := ${WORKING_DIR}/bootstrap
@@ -25,20 +25,37 @@ HARBOR_PASSWORD=""
 check-tools: ## Check to make sure you have the right tools
 	$(foreach exec,$(REQUIRED_BINARIES),\
 		$(if $(shell which $(exec)),,$(error "'$(exec)' not found. It is a dependency for this Makefile")))
+# certificate targets
+certs: check-tools
+	@printf "\n===>Making Certificates\n";
+	@kubectx $(EL8000_CONTEXT)
+	@helm install cert-manager ${BOOTSTRAP_DIR}/rancher/cert-manager-v1.7.3.tgz \
+    --namespace cert-manager \
+	--create-namespace \
+	--set installCRDs=true || true
+	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/issuer-prod.yaml
+	@kubectl create ns harbor || true
+	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-harbor.yaml
+	@kubectl create ns git || true
+	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-gitea.yaml
+	@kubectl create ns cattle-system || true
+	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-rancher.yaml
+	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-harvester.yaml
+
+certs-export: check-tools
+	@printf "\n===>Fetching Certificates\n";
+	@kubectx $(EL8000_CONTEXT)
+	@kubectl get secret -n harbor harbor-prod-certificate -o yaml > harbor_cert.yaml
+	@kubectl get secret -n git gitea-prod-certificate -o yaml > gitea_cert.yaml
+	@kubectl get secret -n cattle-system rancher-airgap-certificate -o yaml > rancher_cert.yaml
+	@kubectl get secret -n cattle-system harvester-homelab-certificate -o yaml > harvester_cert.yaml
 
 # registry targets
 registry: check-tools
 	@printf "\n===> Installing Registry\n";
 	@kubectx $(EL8000_CONTEXT)
-	@kubectl create ns harbor || true
-	@kubectl apply -f ${BOOTSTRAP_DIR}/rancher/cert-manager-crd.yaml
-	@helm install cert-manager ${BOOTSTRAP_DIR}/rancher/cert-manager-v1.7.1.tgz \
-    --namespace cert-manager \
-	--create-namespace
-	@kubectl apply -f ${BOOTSTRAP_DIR}/harbor/issuer-prod.yaml
-	@kubectl apply -f ${BOOTSTRAP_DIR}/harbor/cert.yaml
-	@pushd bootstrap/harbor && helm install harbor ${BOOTSTRAP_DIR}/harbor/harbor-1.9.3.tgz \
-	--version 1.9.3 -n harbor -f values.yaml && popd
+	@helm install harbor ${BOOTSTRAP_DIR}/harbor/harbor-1.9.3.tgz \
+	--version 1.9.3 -n harbor -f ${BOOTSTRAP_DIR}/harbor/values.yaml --create-namespace
 
 registry-delete: check-tools
 	@printf "\n===> Deleting Registry\n";
@@ -57,12 +74,11 @@ push-images: check-tools
 	@printf "\n===>Pushing Images to Harbor\n";
 	@${BOOTSTRAP_DIR}/airgap_images/push_carbide $(HARBOR_URL) $(HARBOR_USER) '$(HARBOR_PASSWORD)' $(IMAGES_FILE)
 
-
 # git targets
 git: check-tools
 	@kubectl create ns git || true
-	@kubectl apply -f ${BOOTSTRAP_DIR}/gitea/cert.yaml
-	@helm upgrade gitea $(BOOTSTRAP_DIR)/gitea/gitea-6.0.1.tgz \
+	@kubectl apply -f ${BOOTSTRAP_DIR}/certs/cert-gitea.yaml || true
+	@helm install gitea $(BOOTSTRAP_DIR)/gitea/gitea-6.0.1.tgz \
 	--namespace git \
 	--set gitea.admin.password=$(GIT_ADMIN_PASSWORD) \
 	--set gitea.admin.username=gitea \
