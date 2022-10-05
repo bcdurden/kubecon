@@ -76,4 +76,8 @@ resource "helm_release" "rancher_server" {
     name  = "systemDefaultRegistry"
     value = "${var.harbor_url}"
   }
+  set {
+    name = "ingress.tls.source"
+    value = "secret"
+  }
 }

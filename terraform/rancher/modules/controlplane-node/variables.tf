@@ -76,26 +76,7 @@ variable "controlplane_node_memory_size" {
     type = string
     default = "4Gi"
 }
-variable "rke2_config_additions" {
+variable "rke2_registry" {
     type = string
-    default = <<EOT
-system-default-registry: harbor.homelab.platformfeverdream.io
-    
-    EOT
-}
-variable "registry_endpoint" {
-    type = string
-    default = <<EOT
-
-      - path: /etc/rancher/rke2/registries.yaml
-        owner: root
-        content: |
-          mirrors:
-            docker.io:
-              endpoint:
-                - "https://harbor.homelab.platformfeverdream.io"
-            harbor.homelab.platformfeverdream.io:
-              endpoint:
-                - "https://harbor.homelab.platformfeverdream.io"
-    EOT
+    default = "harbor.mustafar.lol"
 }

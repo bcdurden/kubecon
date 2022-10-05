@@ -7,6 +7,7 @@ module "controlplane-nodes" {
   master_vip = var.master_vip
   ssh_key = tls_private_key.global_key.private_key_pem
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
+  rke2_registry = var.harbor_url
 
   # ha_mode = true
 }
@@ -24,4 +25,5 @@ module "worker" {
   master_vip = var.master_vip
   ssh_key = tls_private_key.global_key.private_key_pem
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
+  rke2_registry = var.harbor_url
 }

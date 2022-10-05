@@ -61,14 +61,23 @@ resource "harvester_virtualmachine" "node" {
         content: |
           token: ${var.cluster_token}
           server: https://${var.master_hostname}:9345
-          ${var.rke2_config_additions}
+          system-default-registry: ${var.rke2_registry}
       - path: /etc/hosts
         owner: root
         content: |
           127.0.0.1 localhost
           127.0.0.1 "${var.node_prefix}-${count.index}"
           ${var.master_vip} ${var.master_hostname}
-      ${var.registry_endpoint}
+      - path: /etc/rancher/rke2/registries.yaml
+        owner: root
+        content: |
+          mirrors:
+            docker.io:
+              endpoint:
+                - "https://${var.rke2_registry}"
+            ${var.rke2_registry}:
+              endpoint:
+                - "https://${var.rke2_registry}"
       packages:
       - qemu-guest-agent
       runcmd:

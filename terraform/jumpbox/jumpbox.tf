@@ -40,11 +40,26 @@ resource "harvester_virtualmachine" "jumpbox" {
       package_update: true
       packages:
       - qemu-guest-agent
+      - make
       runcmd:
       - - systemctl
         - enable
         - '--now'
         - qemu-guest-agent.service
+      - snap install helm --classic
+      - snap install kubectl --classic
+      - snap install terraform --classic
+      - wget https://github.com/sigstore/cosign/releases/download/v1.12.1/cosign-linux-amd64
+      - install cosign-linux-amd64 /usr/local/bin/cosign
+      - rm cosign-linux-amd64
+      - wget https://github.com/sunny0826/kubecm/releases/download/v0.21.0/kubecm_v0.21.0_Linux_x86_64.tar.gz
+      - tar xvf kubecm_v0.21.0_Linux_x86_64.tar.gz
+      - install kubecm /usr/local/bin/kubecm
+      - rm LICENSE README kubecm kubecm_v0.21.0_Linux_x86_64.tar.gz
+      - git clone https://github.com/ahmetb/kubectx /opt/kubectx
+      - ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
+      - ln -s /opt/kubectx/kubens /usr/local/bin/kubens
+
       ssh_authorized_keys: 
       - ${tls_private_key.rsa_key.public_key_openssh}
     EOT

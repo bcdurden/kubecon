@@ -28,7 +28,10 @@ for image in $(cat $WORKING_DIR/manifest.txt); do
     img_id=$(printf $image | cut -d "|" -f 1)
     dest_image=$(printf "$image" | cut -d "|" -f 2 | sed "s|TARGET_REGISTRY|$TARGET_REGISTRY|g")
     printf "===>Pushing $dest_image\n";
-    cosign load --dir $WORKING_DIR/$img_id $dest_image
+    RESULT=$(cosign load --dir $WORKING_DIR/$img_id $dest_image)
+    if [ $? != 0 ]; then
+      printf "Error detected: $RESULT\n"
+    fi
 done
 
 rm -rf $WORKING_DIR

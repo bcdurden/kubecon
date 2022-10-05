@@ -23,16 +23,16 @@ variable "rancher_version" {
 }
 variable "master_vip" {
     type = string
-    default = "10.10.16.4"
+    default = "10.10.5.4"
 }
 variable "rancher_server_dns" {
   type        = string
   description = "DNS host name of the Rancher server"
-  default = "rancher.airgap.platformfeverdream.io"
+  default = "rancher.mustafar.lol"
 }
 variable "harbor_url" {
   type = string
-  default = "harbor.homelab.platformfeverdream.io"
+  default = "harbor.mustafar.lol"
 }
 variable "rancher_bootstrap_password" {
   type = string
