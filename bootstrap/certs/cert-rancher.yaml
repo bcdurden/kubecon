@@ -4,9 +4,9 @@ metadata:
   name: rancher-airgap
   namespace: cattle-system
 spec:
-  secretName: rancher-airgap-certificate
+  secretName: tls-rancher-ingress
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
-  - 'rancher.airgap.platformfeverdream.io'
+  - rancher.mustafar.lol

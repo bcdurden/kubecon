@@ -1,20 +1,20 @@
-externalURL: https://harbor.homelab.platformfeverdream.io
+externalURL: https://harbor.mustafar.lol
 
-harborAdminPassword:  "Harbor12345"
+harborAdminPassword: "8#&pG8a522x1C&1D%#u" # "Harbor12345"
 
 updateStrategy:
   type: Recreate
 
 expose:
   ingress:
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      core: harbor.homelab.platformfeverdream.io
-      notary: notary.harbor.homelab.platformfeverdream.io
+      core: harbor.mustafar.lol
+      notary: notary.mustafar.lol
   tls:
+    certSource: secret
     secret:
       secretName: harbor-prod-certificate
+      notarySecretName: harbor-prod-certificate
 
 persistence:
   persistentVolumeClaim:

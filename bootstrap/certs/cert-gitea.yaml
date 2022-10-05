@@ -9,4 +9,4 @@ spec:
     name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
-  - git.homelab.platformfeverdream.io
+  - git.mustafar.lol
