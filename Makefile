@@ -128,7 +128,7 @@ rancher: check-tools
 	@printf "\n====> Terraforming RKE2 + Rancher\n";
 	@kubectx $(EL8000_CONTEXT)
 	$(MAKE) terraform COMPONENT=rancher VARS='TF_VAR_rancher_server_dns="$(RANCHER_URL)" TF_VAR_master_vip="$(RKE2_VIP)" TF_VAR_harbor_url="$(HARBOR_URL)"'
-	@cp ${TERRAFORM_DIR}/rancher/kube_config_server.yaml /tmp/rancher-el8000.yaml && kubecm add -f /tmp/rancher-el8000.yaml && rm /tmp/rancher-el8000.yaml
+	@cp ${TERRAFORM_DIR}/rancher/kube_config_server.yaml /tmp/rancher-el8000.yaml && kubecm add -c -f /tmp/rancher-el8000.yaml && rm /tmp/rancher-el8000.yaml
 	@kubectl get secret -n cattle-system tls-rancher-ingress -o yaml > rancher_cert.yaml
 	@kubectx rancher-el8000
 	@kubectl apply -f rancher_cert.yaml
