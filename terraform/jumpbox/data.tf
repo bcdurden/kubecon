@@ -2,16 +2,16 @@ data "harvester_network" "services" {
   name      = "services"
   namespace = "default"
 }
-data "harvester_network" "workloads1" {
-  name      = "workloads1"
+data "harvester_network" "sandbox" {
+  name      = "sandbox"
   namespace = "default"
 }
-data "harvester_network" "workloads2" {
-  name      = "workloads2"
+data "harvester_network" "dev" {
+  name      = "dev"
   namespace = "default"
 }
-data "harvester_network" "workloads3" {
-  name      = "workloads3"
+data "harvester_network" "prod" {
+  name      = "prod"
   namespace = "default"
 }
 data "harvester_image" "ubuntu2004" {

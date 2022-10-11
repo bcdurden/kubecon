@@ -68,7 +68,7 @@ helm repo add longhorn https://charts.longhorn.io
 helm repo update 
 
 # Grab the list of images and download them (requires docker, grep, sed, and awk)
-for image in $(helm template longhorn/longhorn --version ${LONGHORN_RELEASE} | grep 'image:' | sed -e 's/^[ \t]*//' | sort --unique | awk '{ print $2 }'); do
+for image in $(helm template longhorn/longhorn --version ${LONGHORN_RELEASE} | grep 'longhornio/' | sed -e 's/^[ \t]*//' | sed 's/"//g' | sort --unique | awk '{ print $2 }'); do
     source_image=$image
     dest_image=$(echo $image | sed "s|longhornio/|TARGET_REGISTRY/longhornio/|g")
 
