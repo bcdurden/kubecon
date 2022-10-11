@@ -81,6 +81,9 @@ pull-rancher: check-tools
 	@printf "\n===>Pulling Rancher Images\n";
 	@${BOOTSTRAP_DIR}/airgap_images/pull_carbide_rancher $(CARBIDE_USER) '$(CARBIDE_PASSWORD)'
 	@printf "\nIf successful, your images will be available at /tmp/rancher-images.tar.gz and /tmp/cert-manager.tar.gz"
+pull-misc: check-tools
+	@printf "\n===>Pulling Misc Images\n";
+	@${BOOTSTRAP_DIR}/airgap_images/pull_misc
 push-images: check-tools
 	@printf "\n===>Pushing Images to Harbor\n";
 	@${BOOTSTRAP_DIR}/airgap_images/push_carbide $(HARBOR_URL) $(HARBOR_USER) '$(HARBOR_PASSWORD)' $(IMAGES_FILE)
