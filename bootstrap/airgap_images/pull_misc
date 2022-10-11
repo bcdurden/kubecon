@@ -114,9 +114,7 @@ helm repo update
 # Grab the list of images and download them (requires docker, grep, sed, and awk)
 for image in $(helm template grafana/loki --version ${LOKI_RELEASE} | grep 'image:' | sed -e 's/^[ \t]*//' | sed 's/"//g' | sort --unique | awk '{ print $2 }'); do
     source_image=$image
-    dest_image=$(echo $image | sed "s|busybox|TARGET_REGISTRY/grafana/busybox|g")
-    dest_image=$(echo $image | sed "s|nginxinc|grafana|g")
-    dest_image=$(echo $dest_image | sed "s|docker.io/|TARGET_REGISTRY/|g")
+    dest_image=$(echo $image | sed "s|busybox|TARGET_REGISTRY/grafana/busybox|g" | sed "s|nginxinc|grafana|g" | sed "s|docker.io/|TARGET_REGISTRY/|g")
 
     # Create manifest to use during load
     img_dir=$(mktemp -d $DEST_DIRECTORY/loki-image.XXXXXXX)
@@ -160,8 +158,7 @@ helm repo update
 # Grab the list of images and download them (requires docker, grep, sed, and awk)
 for image in $(helm template fluent/fluent-bit --version ${FLUENTBIT_RELEASE} | grep 'image:' | sed -e 's/^[ \t]*//' | sed 's/"//g' | sort --unique | awk '{ print $2 }'); do
     source_image=$image
-    dest_image=$(echo $image | sed "s|busybox|TARGET_REGISTRY/fluent/busybox|g")
-    dest_image=$(echo $dest_image | sed "s|cr.fluentbit.io|TARGET_REGISTRY|g")
+    dest_image=$(echo $image | sed "s|busybox|TARGET_REGISTRY/fluent/busybox|g" | sed "s|cr.fluentbit.io|TARGET_REGISTRY|g")
 
     # Create manifest to use during load
     img_dir=$(mktemp -d $DEST_DIRECTORY/fluentbit-image.XXXXXXX)
