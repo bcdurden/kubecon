@@ -42,3 +42,15 @@ variable "rancher_replicas" {
   type = string
   default = 1
 }
+variable "worker_count" {
+  type = string
+  default = 3
+}
+variable "node_disk_size" {
+  type = string
+  default = "20Gi"
+}
+variable "control_plane_ha_mode" {
+  type = bool
+  default = false
+}

@@ -8,8 +8,9 @@ module "controlplane-nodes" {
   ssh_key = tls_private_key.global_key.private_key_pem
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
   rke2_registry = var.harbor_url
+  disk_size = var.node_disk_size
 
-  # ha_mode = true
+  ha_mode = var.control_plane_ha_mode
 }
 
 module "worker" {
@@ -18,7 +19,7 @@ module "worker" {
     module.controlplane-nodes.controlplane_node
   ]
 
-  worker_count = 3
+  worker_count = var.worker_count
   node_prefix = var.worker_prefix
   node_image_id = data.harvester_image.ubuntu2004.id
   vlan_id = data.harvester_network.services.id
@@ -26,4 +27,5 @@ module "worker" {
   ssh_key = tls_private_key.global_key.private_key_pem
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
   rke2_registry = var.harbor_url
+  disk_size = var.node_disk_size
 }

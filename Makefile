@@ -1,16 +1,15 @@
 SHELL:=/bin/bash
-REQUIRED_BINARIES := kubectl cosign helm terraform kubectx kubecm ytt yq
+REQUIRED_BINARIES := kubectl cosign helm terraform kubectx kubecm ytt yq jq
 WORKING_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(shell git rev-parse --show-toplevel)
 BOOTSTRAP_DIR := ${WORKING_DIR}/bootstrap
 TERRAFORM_DIR := ${WORKING_DIR}/terraform
 
 EL8000_CONTEXT="harvester"
-LOCAL_CLUSTER_NAME=rancher-aws
 BASE_URL=mustafar.lol
 GITEA_URL=git.$(BASE_URL)
 HARBOR_CA_CERT=/tmp/harbor.ca.crt
-GIT_ADMIN_PASSWORD="Pa22word"
+GIT_ADMIN_PASSWORD=""
 CLOUDFLARE_TOKEN=""
 
 # Carbide info
@@ -24,8 +23,11 @@ HARBOR_USER=admin
 HARBOR_PASSWORD=""
 
 # Rancher Info
-RKE2_VIP=10.10.5.4
+RKE2_VIP=10.11.5.4
 RANCHER_URL=rancher.$(BASE_URL)
+RANCHER_HA_MODE=false
+RANCHER_WORKER_COUNT=2
+RANCHER_NODE_SIZE="20Gi"
 
 check-tools: ## Check to make sure you have the right tools
 	$(foreach exec,$(REQUIRED_BINARIES),\
@@ -90,8 +92,7 @@ push-images: check-tools
 
 # git targets
 git: check-tools
-	@kubectl create ns git || true
-	@kubectl apply -f ${BOOTSTRAP_DIR}/certs/cert-gitea.yaml || true
+	@kubectx $(EL8000_CONTEXT)
 	@helm install gitea $(BOOTSTRAP_DIR)/gitea/gitea-6.0.1.tgz \
 	--namespace git \
 	--set gitea.admin.password=$(GIT_ADMIN_PASSWORD) \
@@ -103,6 +104,7 @@ git: check-tools
 	--set gitea.config.server.PROTOCOL=http \
 	-f $(BOOTSTRAP_DIR)/gitea/values.yaml
 git-delete: check-tools
+	@kubectx $(EL8000_CONTEXT)
 	@printf "\n===> Deleting Gitea\n";
 	@helm delete gitea -n git
 
@@ -111,6 +113,9 @@ terraform: check-tools
 	@kubectx $(EL8000_CONTEXT)
 	@terraform -chdir=${TERRAFORM_DIR}/$(COMPONENT) init
 	@$(VARS) terraform -chdir=${TERRAFORM_DIR}/$(COMPONENT) apply
+terraform-value: check-tools
+	@kubectx $(EL8000_CONTEXT)
+	@terraform -chdir=${TERRAFORM_DIR}/$(COMPONENT) output -json | jq -r '.jumpbox_ssh_key.value'
 terraform-destroy: check-tools
 	@kubectx $(EL8000_CONTEXT)
 	@terraform -chdir=${TERRAFORM_DIR}/$(COMPONENT) init
@@ -123,6 +128,9 @@ infra: check-tools
 jumpbox: check-tools
 	@printf "\n====> Terraforming Jumpbox\n";
 	$(MAKE) terraform COMPONENT=jumpbox
+jumpbox-key: check-tools
+	@printf "\n====> Grabbing generated SSH key\n";
+	$(MAKE) terraform-value COMPONENT=jumpbox FIELD=".jumpbox_ssh_key.value"
 jumpbox-destroy: check-tools
 	@printf "\n====> Destroying Jumpbox\n";
 	$(MAKE) terraform-destroy COMPONENT=jumpbox
@@ -130,7 +138,7 @@ jumpbox-destroy: check-tools
 rancher: check-tools
 	@printf "\n====> Terraforming RKE2 + Rancher\n";
 	@kubectx $(EL8000_CONTEXT)
-	$(MAKE) terraform COMPONENT=rancher VARS='TF_VAR_rancher_server_dns="$(RANCHER_URL)" TF_VAR_master_vip="$(RKE2_VIP)" TF_VAR_harbor_url="$(HARBOR_URL)"'
+	$(MAKE) terraform COMPONENT=rancher VARS='TF_VAR_rancher_server_dns="$(RANCHER_URL)" TF_VAR_master_vip="$(RKE2_VIP)" TF_VAR_harbor_url="$(HARBOR_URL)" TF_VAR_worker_count=$(RANCHER_WORKER_COUNT) TF_VAR_control_plane_ha_mode=$(RANCHER_HA_MODE) TF_VAR_node_disk_size=$(RANCHER_NODE_SIZE)'
 	@cp ${TERRAFORM_DIR}/rancher/kube_config_server.yaml /tmp/rancher-el8000.yaml && kubecm add -c -f /tmp/rancher-el8000.yaml && rm /tmp/rancher-el8000.yaml
 	@kubectl get secret -n cattle-system tls-rancher-ingress -o yaml > rancher_cert.yaml
 	@kubectx rancher-el8000
@@ -138,6 +146,6 @@ rancher: check-tools
 	@rm rancher_cert.yaml
 	@kubectx $(EL8000_CONTEXT)
 rancher-destroy: check-tools
-	@printf "\n====> Terraforming RKE2 + Rancher\n";
+	@printf "\n====> Destroying RKE2 + Rancher\n";
 	$(MAKE) terraform-destroy COMPONENT=rancher
 	@kubecm delete rancher-el8000
