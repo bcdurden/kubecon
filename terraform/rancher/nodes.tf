@@ -9,6 +9,8 @@ module "controlplane-nodes" {
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
   rke2_registry = var.harbor_url
   disk_size = var.node_disk_size
+  controlplane_node_core_count = var.control_plane_cpu_count
+  controlplane_node_memory_size = var.control_plane_memory_size
 
   ha_mode = var.control_plane_ha_mode
 }
@@ -28,4 +30,6 @@ module "worker" {
   ssh_pubkey = tls_private_key.global_key.public_key_openssh
   rke2_registry = var.harbor_url
   disk_size = var.node_disk_size
+  worker_node_core_count = var.worker_cpu_count
+  worker_node_memory_size = var.worker_plane_memory_size
 }

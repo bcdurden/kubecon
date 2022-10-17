@@ -51,13 +51,10 @@ variable "worker_count" {
 }
 variable "worker_node_core_count" {
     type = string
-    default = 2
 }
 variable "worker_node_memory_size" {
     type = string
-    default = "4Gi"
 }
 variable "rke2_registry" {
     type = string
-    default = "harbor.mustafar.lol"
 }

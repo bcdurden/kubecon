@@ -54,3 +54,19 @@ variable "control_plane_ha_mode" {
   type = bool
   default = false
 }
+variable "control_plane_cpu_count" {
+  type = string
+  default = 2
+}
+variable "control_plane_memory_size" {
+  type = string
+  default = "4Gi"
+}
+variable "worker_cpu_count" {
+  type = string
+  default = 2
+}
+variable "worker_plane_memory_size" {
+  type = string
+  default = "4Gi"
+}

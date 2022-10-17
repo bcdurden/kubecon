@@ -70,13 +70,10 @@ variable "ha_mode" {
 }
 variable "controlplane_node_core_count" {
     type = string
-    default = 2
 }
 variable "controlplane_node_memory_size" {
     type = string
-    default = "4Gi"
 }
 variable "rke2_registry" {
     type = string
-    default = "harbor.mustafar.lol"
 }
