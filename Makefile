@@ -33,6 +33,7 @@ check-tools: ## Check to make sure you have the right tools
 	$(foreach exec,$(REQUIRED_BINARIES),\
 		$(if $(shell which $(exec)),,$(error "'$(exec)' not found. It is a dependency for this Makefile")))
 # certificate targets
+# CloudDNS holder: kubectl create secret generic clouddns-dns01-solver-svc-acct --from-file=key.json
 certs: check-tools # needs CLOUDFLARE_TOKEN set and EL8000_CONTEXT for non-default contexts
 	@printf "\n===>Making Certificates\n";
 	@kubectx $(EL8000_CONTEXT)
@@ -42,12 +43,12 @@ certs: check-tools # needs CLOUDFLARE_TOKEN set and EL8000_CONTEXT for non-defau
 	--set installCRDs=true || true
 	@ytt -f $(BOOTSTRAP_DIR)/certs/issuer-prod.yaml -f $(BOOTSTRAP_DIR)/certs/overlay-issuer.yaml -v api_token=$(CLOUDFLARE_TOKEN) | kubectl apply -f -
 	@kubectl create ns harbor || true
-	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-harbor.yaml
+	@ytt -f $(BOOTSTRAP_DIR)/certs/cert-harbor.yaml -v base_url=$(BASE_URL) | kubectl apply -f -
 	@kubectl create ns git || true
-	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-gitea.yaml
+	@ytt -f $(BOOTSTRAP_DIR)/certs/cert-gitea.yaml -v base_url=$(BASE_URL) | kubectl apply -f -
 	@kubectl create ns cattle-system || true
-	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-rancher.yaml
-	@kubectl apply -f $(BOOTSTRAP_DIR)/certs/cert-harvester.yaml
+	@ytt -f $(BOOTSTRAP_DIR)/certs/cert-rancher.yaml -v base_url=$(BASE_URL) | kubectl apply -f -
+	@ytt -f $(BOOTSTRAP_DIR)/certs/cert-harvester.yaml -v base_url=$(BASE_URL) | kubectl apply -f -
 
 certs-export: check-tools
 	@printf "\n===>Exporting Certificates\n";
