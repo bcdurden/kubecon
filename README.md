@@ -20,7 +20,7 @@ TBD: Harvester Installation on EL8000, cover iso image hosting and ILO operation
 TBD: Cover turning Longhorn's 12% resource request down
 
 ## Harvester Kubeconfig
-This demo makes use of Harvester as a static singleton K8S cluster in order to provide infrastrcture-based services such as code and image stores. Download the kubeconfig from the Harvester UI console in the `Support` section. Once downloaded, you can use `kubecm` to merge the downloaded kubeconfig with your main kubeconfig. It's important to set the name of the context to something that can be represented as a simple string. I used `harvester` as it was simple and straight-forward.
+TBD
 
 ## Prep Harvester's Ubuntu OS Image
 To make this special image, we'll need to pull down the previously mentioned OS image to our local workstation and then do some work upon it using `guestfs` tools. This is slightly involved, but once finished, you'll have 80% of the manual steps above canned into a single image making it very easy to automate in an airgap. If you are not using Harvester, this image is in qcow2 format and should be usable in different HCI solutions, however your Terraform code will look different. Try to follow along, regardless, so the process around how you would bootstrap the cluster (and Rancher) from Terraform is understood at a high-level.

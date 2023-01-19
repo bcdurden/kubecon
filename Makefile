@@ -15,10 +15,6 @@ CARBIDE_USER="internal-tester-read"
 CARBIDE_PASSWORD=""
 IMAGES_FILE=""
 
-# Harbor info
-REGISTRY_URL=harbor.$(BASE_URL)
-HARBOR_USER=admin
-HARBOR_PASSWORD=""
 # Registry info
 REGISTRY_URL=harbor.$(BASE_URL)
 REGISTRY_USER=admin
