@@ -1,20 +1,8 @@
-data "harvester_network" "services" {
-  name      = "services"
+data "harvester_network" "target_network" {
+  name      = var.target_network_name
   namespace = "default"
 }
-data "harvester_network" "sandbox" {
-  name      = "sandbox"
-  namespace = "default"
-}
-data "harvester_network" "dev" {
-  name      = "dev"
-  namespace = "default"
-}
-data "harvester_network" "prod" {
-  name      = "prod"
-  namespace = "default"
-}
-data "harvester_image" "ubuntu2004" {
-  name      = "ubuntu-2004"
+data "harvester_image" "ubuntu2004-rke2" {
+  name      = var.harvester_rke2_image_name
   namespace = "default"
 }

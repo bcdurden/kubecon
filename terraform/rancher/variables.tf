@@ -13,13 +13,13 @@ variable "kubeconfig_filename" {
 variable "cert_manager_version" {
   type        = string
   description = "Version of cert-manager to install alongside Rancher (format: 0.0.0)"
-  default     = "1.7.3"
+  default     = "1.8.1"
 }
 
 variable "rancher_version" {
   type        = string
   description = "Rancher server version (format v0.0.0)"
-  default     = "2.6.7"
+  default     = "2.7.0"
 }
 variable "master_vip" {
     type = string
@@ -28,15 +28,15 @@ variable "master_vip" {
 variable "rancher_server_dns" {
   type        = string
   description = "DNS host name of the Rancher server"
-  default = "rancher.mustafar.lol"
+  default = "rancher.home.sienarfleet.systems"
 }
-variable "harbor_url" {
+variable "registry_url" {
   type = string
-  default = "harbor.mustafar.lol"
+  default = "harbor.sienarfleet.systems"
 }
 variable "rancher_bootstrap_password" {
   type = string
-  default = "admin" # TODO: change this once the terraform provider has been updated with the new pw bootstrap logic
+  default = "admin" 
 }
 variable "rancher_replicas" {
   type = string
@@ -44,7 +44,7 @@ variable "rancher_replicas" {
 }
 variable "worker_count" {
   type = string
-  default = 3
+  default = 1
 }
 variable "node_disk_size" {
   type = string
@@ -66,7 +66,13 @@ variable "worker_cpu_count" {
   type = string
   default = 2
 }
-variable "worker_plane_memory_size" {
+variable "worker_memory_size" {
   type = string
   default = "4Gi"
+}
+variable "harvester_rke2_image_name" {
+  type = string
+}
+variable "target_network_name" {
+  type = string
 }

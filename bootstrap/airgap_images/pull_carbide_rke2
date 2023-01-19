@@ -37,7 +37,11 @@ for image in $RKE2_IMAGES; do
     echo "$img_id_num|$dest_image" >> $DEST_DIRECTORY/manifest.txt
     
     # Save image locally
+    printf "Exporting $source_image\n"
     cosign save --dir "$DEST_DIRECTORY/$img_id_num" $source_image
+    if [ $? != 0 ]; then
+      cosign save --dir "$DEST_DIRECTORY/$img_id_num" $source_image
+    fi
 done
 
 # Compress directory

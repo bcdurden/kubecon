@@ -44,6 +44,9 @@ for image in $(helm template jetstack/cert-manager --version $CERT_MANAGER_RELEA
     # Save image locally
     printf "Exporting $source_image\n"
     cosign save --dir "$img_dir" $source_image
+    if [ $? != 0 ]; then
+      cosign save --dir "$DEST_DIRECTORY/$img_id_num" $source_image
+    fi
 done
 
 # Compress directory
@@ -90,7 +93,7 @@ for image in $RANCHER_IMAGES; do
     printf "Exporting $source_image\n"
     cosign save --dir "$img_dir" $source_image
     if [ $? != 0 ]; then
-        printf "FAILED: cosign save --dir $img_dir $source_image\n"
+      cosign save --dir "$DEST_DIRECTORY/$img_id_num" $source_image
     fi
 done
 

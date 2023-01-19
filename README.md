@@ -20,7 +20,9 @@ TBD: Harvester Installation on EL8000, cover iso image hosting and ILO operation
 TBD: Cover turning Longhorn's 12% resource request down
 
 ## Harvester Kubeconfig
-This demo makes use of Harvester as a singleton K8S cluster in order to provide infrastrcture-based services such as code and image stores. Download the kubeconfig from the Harvester UI console in the `Support` section. Once downloaded, you can use `kubecm` to merge the downloaded kubeconfig with your main kubeconfig. It's important to set the name of the context to something that can be represented as a simple string. I used `harvester` as it was simple and straight-forward.
+This demo makes use of Harvester as a static singleton K8S cluster in order to provide infrastrcture-based services such as code and image stores. Download the kubeconfig from the Harvester UI console in the `Support` section. Once downloaded, you can use `kubecm` to merge the downloaded kubeconfig with your main kubeconfig. It's important to set the name of the context to something that can be represented as a simple string. I used `harvester` as it was simple and straight-forward.
+
+
 
 ## Concepts
 
@@ -337,11 +339,99 @@ Switched to context "my-harvester".
 ```
 
 ## Rancher Manager Installation
-Rancher Manager is installed via Terraform and uses a set of modules that will build out an airgapped RKE2 cluster. Many configurations are defaulted, but the control-plane and worker node counts are defaulted in the Makefile allowing you to control them based on desired state. If you wish to alter the per-node VM compute/memory allocations, please see the `terraform/rancher/variables.tf` file and make adjustments to defaults where necessary. This is not a typical production setup so there is no tfvars file to keep things clean and portable.
+Rancher Manager is installed via Terraform and uses a set of modules that will build out an airgapped RKE2 cluster. Many configurations are defaulted, but the control-plane and worker node counts are defaulted in the Makefile allowing you to control them based on desired state. If you wish to alter the per-node VM compute/memory allocations, please see the `terraform/rancher/variables.tf` file and make adjustments to defaults where necessary. This is not a typical production setup so there is no tfvars file, this keep things clean and portable.
 
 Configurable flags for Rancher's make-based deployment:
 * RANCHER_HA_MODE = (true or false) -- defaults to false
-* RANCHER_WORKER_COUNT = Number above 1, suggested 2 or 3, defaults to 3
+* RANCHER_WORKER_COUNT = Number greater than 0, suggested 2 or 3, defaults to 3
 * RANCHER_NODE_SIZE = Number in Gigabytes, 20 is default and in the format of `20Gi`
+* RKE2_VIP = kubevip assignment for control plane node in RKE2 (defaults to 10.11.5.4)
 
-Deploy Rancher using `make rancher` with any args defined after, or none if you want default values.
+Deploy Rancher using `make rancher` with any args defined after, or none if you want default values. This command will create an RKE2 cluster within the Harvester cluster and install Rancher upon it. After finishing it will pull the kubeconfig down into your local kubecontext and install a TLS certificate on it.
+
+```console
+> make rancher RANCHER_WORKER_COUNT=1 RKE2_VIP=10.11.5.4 EL8000_CONTEXT=my-harvester
+
+====> Terraforming RKE2 + Rancher
+Switched to context "my-harvester".
+/Library/Developer/CommandLineTools/usr/bin/make terraform COMPONENT=rancher VARS='TF_VAR_harbor_url="harbor.mustafar.lol" TF_VAR_rancher_server_dns="rancher.mustafar.lol" TF_VAR_master_vip="10.11.5.4" TF_VAR_harbor_url="harbor.mustafar.lol" TF_VAR_worker_count=1 TF_VAR_control_plane_ha_mode=false TF_VAR_node_disk_size="20Gi"'
+Switched to context "my-harvester".
+Initializing modules...
+
+...
+
+tls_private_key.global_key: Creating...
+tls_private_key.global_key: Creation complete after 0s [id=f2c24ab5b2ef91f5c52f902467786dfce6d95c11]
+module.controlplane-nodes.harvester_virtualmachine.node-main: Creating...
+module.controlplane-nodes.harvester_virtualmachine.node-main: Still creating... [50s elapsed]
+module.controlplane-nodes.harvester_virtualmachine.node-main: Provisioning with 'remote-exec'...
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec): Connecting to remote host via SSH...
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Host: 10.11.5.219
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   User: ubuntu
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Password: false
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Private key: true
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Certificate: false
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   SSH Agent: true
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Checking Host Key: false
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec):   Target Platform: unix
+module.controlplane-nodes.harvester_virtualmachine.node-main: Still creating... [1m0s elapsed]
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec): Connected!
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec): Waiting for cloud-init to complete...
+module.controlplane-nodes.harvester_virtualmachine.node-main: Still creating... [1m10s elapsed]
+module.controlplane-nodes.harvester_virtualmachine.node-main: Still creating... [1m20s elapsed]
+module.controlplane-nodes.harvester_virtualmachine.node-main: Still creating... [1m30s elapsed]
+module.controlplane-nodes.harvester_virtualmachine.node-main (remote-exec): Completed cloud-init!
+module.controlplane-nodes.harvester_virtualmachine.node-main: Creation complete after 1m35s [id=default/rke2-mgmt-controlplane-0]
+ssh_resource.retrieve_config: Creating...
+module.worker.harvester_virtualmachine.node[0]: Creating...
+ssh_resource.retrieve_config: Creation complete after 1s [id=5577006791947779410]
+local_file.kube_config_server_yaml: Creating...
+local_file.kube_config_server_yaml: Creation complete after 0s [id=1dc12cd2784bcf2c483b0f2eae3c15cb0ce4c8b5]
+module.worker.harvester_virtualmachine.node[0]: Still creating... [1m0s elapsed]
+module.worker.harvester_virtualmachine.node[0]: Provisioning with 'remote-exec'...
+module.worker.harvester_virtualmachine.node[0] (remote-exec): Connecting to remote host via SSH...
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Host: 10.11.5.64
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   User: ubuntu
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Password: false
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Private key: true
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Certificate: false
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   SSH Agent: true
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Checking Host Key: false
+module.worker.harvester_virtualmachine.node[0] (remote-exec):   Target Platform: unix
+module.worker.harvester_virtualmachine.node[0]: Still creating... [1m10s elapsed]
+module.worker.harvester_virtualmachine.node[0] (remote-exec): Connected!
+module.worker.harvester_virtualmachine.node[0] (remote-exec): Waiting for cloud-init to complete...
+module.worker.harvester_virtualmachine.node[0] (remote-exec): Completed cloud-init!
+module.worker.harvester_virtualmachine.node[0]: Creation complete after 1m16s [id=default/rke2-mgmt-worker-0]
+helm_release.cert_manager: Creating...
+helm_release.cert_manager: Still creating... [20s elapsed]
+helm_release.cert_manager: Creation complete after 24s [id=cert-manager]
+helm_release.rancher_server: Creating...
+helm_release.rancher_server: Still creating... [1m10s elapsed]
+helm_release.rancher_server: Creation complete after 1m13s [id=rancher]
+
+Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+kube = <sensitive>
+ssh_key = <sensitive>
+ssh_pubkey = <<EOT
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7QpnkfcaXro+dEHWwjK7zk5y0WoRcnsqvAS4csVV79AT38nQ+W6Uuix5z+LOpYsPad/xzZSX+n2qipLJZiNBxIEksXyjU3m5go1V4+Kb+hzL0t79yNy8SMdWaIMJgHp/tDQfJDXPtQ/FKkOJCGnnDvP/W18Wes3zPunXkMsXddDRTYnzJ8iuFq8UZ2z5gg3OSYOZ7iO8fXOMd1XJW/ynNvDZN3EGbRTZEWahcYnREGbl+/wnxXh93TYXSRZ5+lPSOAI4T/fwpoq3x0P58y7rAVRLoAQNBBleP+NhhWyBY8rdcdjh6v57Wk9xr+PUzt+7DFaHC5yewKRR0ZsKfQmTV
+
+EOT
+Add Context: rancher-el8000 
+「/tmp/rancher-el8000.yaml」 write successful!
++------------+-------------------+-----------------------+--------------------+-----------------------------------+--------------+
+|   CURRENT  |        NAME       |        CLUSTER        |        USER        |               SERVER              |   Namespace  |
++============+===================+=======================+====================+===================================+==============+
+|      *     |    my-harvester   |   cluster-8c5g87ht4k  |   user-8c5g87ht4k  |   https://10.11.0.20/k8s/cluster  |    default   |
+|            |                   |                       |                    |              s/local              |              |
++------------+-------------------+-----------------------+--------------------+-----------------------------------+--------------+
+|            |   rancher-el8000  |   cluster-bfgk6bft59  |   user-bfgk6bft59  |       https://10.11.5.4:6443      |    default   |
++------------+-------------------+-----------------------+--------------------+-----------------------------------+--------------+
+
+Switched to context "rancher-el8000".
+secret/tls-rancher-ingress created
+Switched to context "my-harvester".
+```

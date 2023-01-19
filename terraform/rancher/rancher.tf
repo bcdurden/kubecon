@@ -24,19 +24,19 @@ resource "helm_release" "cert_manager" {
   }
   set {
     name  = "image.repository"
-    value = "${var.harbor_url}/jetstack/cert-manager-controller"
+    value = "${var.registry_url}/jetstack/cert-manager-controller"
   }
   set {
     name  = "webhook.image.repository"
-    value = "${var.harbor_url}/jetstack/cert-manager-webhook"
+    value = "${var.registry_url}/jetstack/cert-manager-webhook"
   }
   set {
     name  = "cainjector.image.repository"
-    value = "${var.harbor_url}/jetstack/cert-manager-cainjector"
+    value = "${var.registry_url}/jetstack/cert-manager-cainjector"
   }
   set {
     name  = "startupapicheck.image.repository"
-    value = "${var.harbor_url}/jetstack/cert-manager-ctl"
+    value = "${var.registry_url}/jetstack/cert-manager-ctl"
   }
 }
 
@@ -65,18 +65,14 @@ resource "helm_release" "rancher_server" {
     value = var.rancher_bootstrap_password
   }
   set {
-    name  = "certmanager.version"
-    value = var.cert_manager_version
-  }
-  set {
     name  = "rancherImage"
-    value = "${var.harbor_url}/rancher/rancher"
+    value = "${var.registry_url}/rancher/rancher"
   }
   set {
     name  = "systemDefaultRegistry"
-    value = "${var.harbor_url}"
+    value = "${var.registry_url}"
   }
-  set {
+    set {
     name = "ingress.tls.source"
     value = "secret"
   }
