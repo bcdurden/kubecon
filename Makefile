@@ -84,10 +84,6 @@ registry-delete: check-tools
 	@helm delete harbor -n harbor
 
 # airgap targets
-pull-rke2: check-tools
-	@printf "\n===>Pulling RKE2 Images\n";
-	@${BOOTSTRAP_DIR}/airgap_images/pull_carbide_rke2 $(CARBIDE_USER) '$(CARBIDE_PASSWORD)'
-	@printf "\nIf successful, your images will be available at /tmp/rke2-images.tar.gz"
 pull-rancher: check-tools
 	@printf "\n===>Pulling Rancher Images\n";
 	@${BOOTSTRAP_DIR}/airgap_images/pull_carbide_rancher $(CARBIDE_USER) '$(CARBIDE_PASSWORD)'
